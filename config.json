@@ -1,0 +1,53 @@
+{
+	"BitcoinFeeds" : [
+		{
+			"Title":"Coindesk",
+			"Url":"http://api.coindesk.com/v1/bpi/currentprice.json",
+			"ScrapperClass":"json",
+			"ScraperOptions":{
+				"Opt1":"bpi/USD/rate",
+				"Opt2":"",
+				"Opt3":""
+			},
+			"Expires":10
+		},
+		{
+			"Title":"Blockchain",
+			"Url":"https://blockchain.info/ticker",
+			"ScrapperClass":"json",
+			"ScraperOptions":{
+				"Opt1":"USD/sell",
+				"Opt2":"",
+				"Opt3":""
+			},
+			"Expires":20
+		}
+	],
+	"EuroFeeds" : [
+		{
+			"Title":"Fixer",
+			"Url":"http://api.fixer.io/latest",
+			"ScrapperClass":"json",
+			"ScraperOptions":{
+				"Opt1":"rates/USD",
+				"Opt2":"",
+				"Opt3":""
+			},
+			"Expires":30
+		},
+		{
+			"Title":"Floatrates",
+			"Url":"http://www.floatrates.com/daily/eur.json",
+			"ScrapperClass":"json",
+			"ScraperOptions":{
+				"Opt1":"usd/rate",
+				"Opt2":"",
+				"Opt3":""
+			},
+			"Expires":30
+		}
+	],
+	"MinBitcoin":2,
+	"MinEuro":2,
+	"LogFile":"stdout"
+}
