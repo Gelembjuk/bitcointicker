@@ -44,6 +44,8 @@ func main() {
 	}
 
 	stopmainchan := make(chan struct{})
+	stopmainconfirmchan := make(chan struct{})
+	theendchan := make(chan struct{})
 	// prepare to catch a signal of
 	sigs := make(chan os.Signal, 1)
 
@@ -52,12 +54,21 @@ func main() {
 	go func(bp *RatesPull, ep *RatesPull) {
 		sig := <-sigs
 
-		Info.Println("Interupted %d . Stop workers", sig)
+		Info.Printf("Interupted %d . Stop workers", sig)
 
-		bp.Destroy()
+		// stop checking rates
+		close(stopmainchan)
+
+		// wait main thread confirms it stopped to read pulls
+		<-stopmainconfirmchan
+
+		// stop all goroutines
+
 		ep.Destroy()
 
-		close(stopmainchan)
+		bp.Destroy()
+		// final exit from the program
+		close(theendchan)
 
 		return
 	}(&bpull, &epull)
@@ -115,10 +126,11 @@ func main() {
 		}
 
 		if stop {
+			close(stopmainconfirmchan)
 			break
 		}
 	}
+	<-theendchan
 
 	Info.Println("The tool completed")
-
 }

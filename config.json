@@ -49,5 +49,5 @@
 	],
 	"MinBitcoin":2,
 	"MinEuro":2,
-	"LogFile":"stdout"
+	"LogFile":""
 }

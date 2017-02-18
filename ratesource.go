@@ -51,7 +51,7 @@ func (this *RateSource) getRate() (RateInfo, error) {
 	now := time.Now()
 	unixsecs := int(now.Unix())
 
-	Trace.Println("get Rate")
+	Trace.Printf("get Rate from %s", this.Title)
 
 	if this.LastScrapTime > 0 &&
 		this.LastScrapTime+this.Expires < unixsecs {
@@ -86,7 +86,7 @@ func (this *RateSource) getRate() (RateInfo, error) {
 	this.LastResult = rate
 	this.LastScrapTime = unixsecs
 
-	Trace.Printf("Return rate %0.7f", rate)
+	Trace.Printf("Return rate %0.5f from %s", rate, this.Title)
 
 	result := RateInfo{Rate: rate}
 
