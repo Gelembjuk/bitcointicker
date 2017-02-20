@@ -11,7 +11,7 @@ import (
 var config Configuration
 
 func main() {
-
+	// get configuration
 	var err error
 	config, err = getConfig()
 
@@ -19,7 +19,7 @@ func main() {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-
+	// set up logging
 	if config.LogFile == "stdout" {
 		logToStd()
 	} else if config.LogFile != "" {
@@ -43,12 +43,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	// prepare to catch a signal of
+	// channels to controll application completion process
 	stopmainchan := make(chan struct{})
 	stopmainconfirmchan := make(chan struct{})
 	theendchan := make(chan struct{})
-	// prepare to catch a signal of
-	sigs := make(chan os.Signal, 1)
 
+	// to receive external interrup signal
+	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	go func(bp *RatesPull, ep *RatesPull) {
@@ -63,7 +65,6 @@ func main() {
 		<-stopmainconfirmchan
 
 		// stop all goroutines
-
 		ep.Destroy()
 
 		bp.Destroy()
@@ -75,62 +76,71 @@ func main() {
 
 	// read sources and show state
 	for {
-		r1 := bpull.GetRate()
+		// read rates and show status line
+		showStatus(bpull, epull)
 
-		r2 := epull.GetRate()
-
-		res := ""
-
-		if r1.CountSources >= config.MinBitcoin {
-			res = fmt.Sprintf("BTC/USD: %0.2f", r1.Rate)
-		} else {
-			res = "BTC/USD: Undefined"
-		}
-
-		res += "\t"
-
-		if r2.CountSources >= config.MinEuro {
-			res += fmt.Sprintf("EUR/USD: %0.5f", r2.Rate)
-		} else {
-			res += "EUR/USD: Undefined"
-		}
-
-		res += "\t"
-
-		if r1.CountSources >= config.MinBitcoin && r2.CountSources >= config.MinEuro {
-			be := float64(0)
-
-			if r2.Rate > 0 {
-				be = r1.Rate / r2.Rate
-			}
-			res += fmt.Sprintf("BTC/EUR: %0.2f", be)
-		} else {
-			res += "BTC/EUR: Undefined"
-		}
-
-		res += "\t"
-
-		res += fmt.Sprintf("Active sources: BTC/USD (%d of %d)  EUR/USD (%d of %d)", r1.CountSources, r1.TotalSources, r2.CountSources, r2.TotalSources)
-
-		fmt.Println(res)
-
+		// check if is a time to stop this loop
 		stop := false
 
+		// check if a channel is still open. It can be closed in agoroutine when receive external stop signal
 		select {
 		case _, ok := <-stopmainchan:
 			if !ok {
 				stop = true
 			}
 		default:
-			time.Sleep(1 * time.Second)
 		}
 
 		if stop {
 			close(stopmainconfirmchan)
 			break
 		}
+
+		// sleep before next status show
+		time.Sleep(1 * time.Second)
 	}
 	<-theendchan
 
 	Info.Println("The tool completed")
+}
+
+func showStatus(bpull RatesPull, epull RatesPull) {
+	r1 := bpull.GetRate()
+
+	r2 := epull.GetRate()
+
+	res := ""
+
+	if r1.CountSources >= config.MinBitcoin {
+		res = fmt.Sprintf("BTC/USD: %0.2f", r1.Rate)
+	} else {
+		res = "BTC/USD: Undefined"
+	}
+
+	res += "\t"
+
+	if r2.CountSources >= config.MinEuro {
+		res += fmt.Sprintf("EUR/USD: %0.5f", r2.Rate)
+	} else {
+		res += "EUR/USD: Undefined"
+	}
+
+	res += "\t"
+
+	if r1.CountSources >= config.MinBitcoin && r2.CountSources >= config.MinEuro {
+		be := float64(0)
+
+		if r2.Rate > 0 {
+			be = r1.Rate / r2.Rate
+		}
+		res += fmt.Sprintf("BTC/EUR: %0.2f", be)
+	} else {
+		res += "BTC/EUR: Undefined"
+	}
+
+	res += "\t"
+
+	res += fmt.Sprintf("Active sources: BTC/USD (%d of %d)  EUR/USD (%d of %d)", r1.CountSources, r1.TotalSources, r2.CountSources, r2.TotalSources)
+
+	fmt.Println(res)
 }

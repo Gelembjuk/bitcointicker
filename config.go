@@ -33,6 +33,7 @@ type Configuration struct {
 }
 
 func init() {
+	// set logging to dev/null
 	Trace = log.New(ioutil.Discard,
 		"TRACE: ",
 		log.Ldate|log.Ltime|log.Lshortfile)
@@ -51,6 +52,7 @@ func init() {
 
 }
 
+// Parse config file
 func getConfig() (Configuration, error) {
 	file, errf := os.Open("config.json")
 
@@ -68,6 +70,7 @@ func getConfig() (Configuration, error) {
 	return configuration, nil
 }
 
+// set logging to stdout
 func logToStd() {
 	Trace.SetOutput(os.Stdout)
 	Info.SetOutput(os.Stdout)
@@ -75,6 +78,7 @@ func logToStd() {
 	Error.SetOutput(os.Stdout)
 }
 
+// set logging to given file
 func logToFile(filepath string) {
 
 	f, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
