@@ -1,3 +1,6 @@
+/*
+* by Roman Gelembjuk <roman@gelembjuk.com>
+ */
 package main
 
 import (
